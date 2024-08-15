@@ -1,15 +1,11 @@
 ﻿using System.IO;
-using System.Text;
 using System.Collections.Generic;
 
 void main()
 {
-   string[] vaults = ReadVaults();
-    foreach(string vault in vaults)
-    {
-        Console.WriteLine(vault);
-    }
-   
+    string[] vaults = ReadVaults();
+    
+
 }
 
 /*ReadVaults function:
@@ -70,35 +66,17 @@ string[] CreateVault(string FilePath)
 /*GetVaultName function:
   Input: array of vault files
   Output: array of vault names
-  Function: use substrings and StringBuilder to slice the .upw from the file extension of file names
+  Function: turns the file paths into just the vault names
 */
 string[] GetVaultNames(string[] VaultFiles)
 {
     List<string> vaults = new List<string>();
-    foreach (var item in VaultFiles)
-    {
-        Console.WriteLine(item);
-    }
     foreach (var file in VaultFiles)
     {
-        string[] name = file.Split('.');
-        foreach (var word in name)
-        {
-            Console.WriteLine(word);
-        }
-        var sb = new System.Text.StringBuilder();
-        if (name.Length > 2)
-        {
-            for(int i = 0; i < (name.Length - 2); i++)
-            {
-                sb.AppendLine(name[i]);
-            }
-            vaults.Append(sb.ToString());
-        }
-        else
-        {
-            continue;
-        }
+        string[] name = file.Split(@"\");
+        string[] filename = name[name.Length - 1].Split(".");
+        Console.WriteLine(filename.First());
+        vaults.Append(filename.First());
     }
     return vaults.ToArray();
 }
