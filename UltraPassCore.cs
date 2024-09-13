@@ -14,11 +14,13 @@ namespace UltraPassCore
 {
     class PasswordManager
     {
-        public string[] vaults;
-        string VaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "UltraPass/");
+        public string[] vaults = [];
+        public int VaultLength;
+        string VaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"UltraPass\");
         public PasswordManager() 
         {
-            vaults = ReadVaults(VaultPath);
+            ReadVaults();
+            VaultLength = vaults.Length;
         }
 
         /*ReadVaults function:
@@ -26,9 +28,8 @@ namespace UltraPassCore
         Output: array of vaults within vault directory
         Function: gets vaults within directory, determines whether to create a new vault or read from existing list
         */
-        public string[] ReadVaults()
+        public void ReadVaults()
         {
-            string[] vaults;
             string[] VaultFiles;
             try
             {
@@ -39,14 +40,11 @@ namespace UltraPassCore
                 Directory.CreateDirectory(VaultPath);
                 VaultFiles = [];
             }
-            if (VaultFiles.Length == 0)
+            if (VaultFiles.Length != 0)
             {
-                Console.WriteLine("No vaults found! Creating a new vault...");
-                CreateVault(VaultPath);
+                vaults = GetVaultNames(VaultFiles);
             }
-            vaults = GetVaultNames(VaultFiles);
-
-            return vaults;
+            else vaults = [];
         }
 
         /*CreateVault function:
@@ -54,31 +52,16 @@ namespace UltraPassCore
         Output: array with vault name
         Function: creates a new .upw file in vaults directory with name prompted from CLI
         */
-        public void CreateVault()
+        public void CreateVault(string VaultName, string VaultPassword)
         {
-            string VaultName;
-            string VaultPassword;
+            if(VaultPassword == "")
+            {
+                throw new Exception("Vault password is blank", e);
+            }
             SHA256 hash = SHA256.Create();
-            bool nameComplete = false;
-            bool passwordComplete = false;
             /*IMPORTANT: CHANGE THIS TO TAKE USERNAME AND PASSWORD AS FUNCTION INPUT*/
-            do
-            {
-                Console.WriteLine("Enter your new vault name here:");
-                VaultName = Console.ReadLine();
-                if (VaultName == "") Console.WriteLine("Put in a valid vault name.");
-                else if (!IsAlphaNumeric(VaultName)) Console.WriteLine("Your name has a disallowed character. Please try again.");
-                else nameComplete = true;
-            } while (!nameComplete);
-            do
-            {
-                Console.WriteLine("Enter your new vault name here:");
-                VaultPassword = Console.ReadLine();
-                if (VaultPassword == "") Console.WriteLine("Put in a valid vault password.");
-                else passwordComplete = true;
-            } while (!passwordComplete);
             string HashedPassword = HashPassword(VaultPassword);
-            string path = FilePath + @"\" + VaultName + ".upw";
+            string path = VaultPath + @"\" + VaultName + ".upw";
             try
             {
                 File.Create(path);
@@ -116,18 +99,20 @@ namespace UltraPassCore
         Output: boolean
         Function: determines if a given string is alphanumeric
         */
-        public static bool IsAlphaNumeric(string input)
+        public bool IsAlphaNumeric(string input)
         {
-            Regex rg = new Regex("[^a-zA-Z0-9]");
+            Regex rg = new Regex(@"^[^a-zA-Z0-9_,]*$");
             return rg.IsMatch(input);
         }
+        /*Personal note on regexes:
+         Regexes contain a series of characters that will be checked against, in this case all lowercase letters (a-z), uppercase letters (A-Z), numbers (0-9), and underscores(_)*/
 
         /*HashPassword function:
         Input: password string
         Output: Base64-encoded string
         Function: hashes a string with SHA-256 before converting it into a Base64 string
         */
-        public static string HashPassword(string input)
+        public string HashPassword(string input)
         {
             SHA256 hash = SHA256.Create();
             byte[] bytes = Encoding.Default.GetBytes(input);

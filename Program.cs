@@ -5,12 +5,13 @@ using System.Linq;
 using System.ComponentModel;
 using System.Security.Cryptography;
 using UltraPassCore;
+using Microsoft.VisualBasic;
+using System.Text.RegularExpressions;
 
 void main()
 {
-    string VaultPath = @"C:\ProgramData\UltraPass";
     PasswordManager mgr = new PasswordManager();
-    menu(mgr, VaultPath);
+    menu(mgr);
 }
 
 /*menu function:
@@ -20,12 +21,11 @@ void main()
 */
 void menu(PasswordManager mgr)
 {
-    int VaultLength = mgr.vaults.Length;
     bool KillProg = false;
     while (!KillProg)
     {
         Console.WriteLine("Available vaults: ");
-        for (int i = 0; i < VaultLength; i++) Console.WriteLine(i + ". " + mgr.vaults[i]);
+        if(mgr.VaultLength != 0) for (int i = 0; i < mgr.VaultLength; i++) Console.WriteLine(i + ". " + mgr.vaults[i]);
         Console.WriteLine("Available options: \nType the vault's number to open it. \nType n to create a new vault. \nType q to quit.");
         string response = Console.ReadLine();
         if (response == "q")
@@ -36,7 +36,8 @@ void menu(PasswordManager mgr)
         else if (response == "n")
         {
             Console.WriteLine("Creating a new vault...");
-            mgr.CreateVault();
+            string[] VaultInfo = GetVaultInfo();
+            mgr.CreateVault(VaultInfo[0], VaultInfo[1]);
             menu(mgr);
             KillProg = true;
         }
@@ -44,7 +45,7 @@ void menu(PasswordManager mgr)
         {
             int vault;
             bool success = int.TryParse(response, out vault);
-            if (success && 0 <= vault && vault <= VaultLength - 1)
+            if (success && 0 <= vault && vault <= mgr.VaultLength - 1)
             {
                 Console.WriteLine("Opening vault" + vault);
             }
@@ -56,6 +57,39 @@ void menu(PasswordManager mgr)
     }
 }
 
+string[] GetVaultInfo()
+{
+    string name;
+    string password;
+    bool NameComplete = false;
+    bool PasswordComplete = false;
+    do
+    {
+        Console.WriteLine("Enter a name for your vault: ");
+        name = Console.ReadLine();
+        if (IsAlphaNumeric(name) && name != "") NameComplete = true;
+        else Console.WriteLine("Please only use alphanumeric characters or underscores(_) in your vault name.");
+    } while(!NameComplete);
+    do
+    {
+        Console.WriteLine("Enter a password for your vault: ");
+        password = Console.ReadLine();
+        if (password != "") PasswordComplete = true;
+        else Console.WriteLine("Please enter a password.");
+    } while (!PasswordComplete);
+    return [name, password];
+}
+
+/*IsAlphaNumeric function:
+Input: string
+Output: boolean
+Function: determines if a given string is alphanumeric
+*/
+bool IsAlphaNumeric(string input)
+{
+    Regex rg = new Regex(@"^[^a-zA-Z0-9_,]*$");
+    return rg.IsMatch(input);
+}
 
 
 main();
