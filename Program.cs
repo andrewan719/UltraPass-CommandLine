@@ -36,10 +36,8 @@ void menu(PasswordManager mgr)
         else if (response == "n")
         {
             Console.WriteLine("Creating a new vault...");
-            string[] VaultInfo = GetVaultInfo();
-            mgr.CreateVault(VaultInfo[0], VaultInfo[1]);
-            menu(mgr);
-            KillProg = true;
+            (string, string) VaultInfo = GetVaultInfo();
+            mgr.CreateVault(VaultInfo.Item1, VaultInfo.Item2);
         }
         else
         {
@@ -48,6 +46,17 @@ void menu(PasswordManager mgr)
             if (success && 0 <= vault && vault <= mgr.VaultLength - 1)
             {
                 Console.WriteLine("Opening vault" + vault);
+                Console.WriteLine("Enter vault password: ");
+                string password = Console.ReadLine();
+                try
+                {
+                    if (password != "") mgr.OpenVault(vault, password);
+                    else Console.WriteLine("Please enter a password.");
+                }
+                catch
+                {
+                    Console.WriteLine("Incorrect password.");
+                }
             }
             else
             {
@@ -57,7 +66,7 @@ void menu(PasswordManager mgr)
     }
 }
 
-string[] GetVaultInfo()
+(string, string) GetVaultInfo()
 {
     string name;
     string password;
@@ -77,7 +86,7 @@ string[] GetVaultInfo()
         if (password != "") PasswordComplete = true;
         else Console.WriteLine("Please enter a password.");
     } while (!PasswordComplete);
-    return [name, password];
+    return (name, password);
 }
 
 /*IsAlphaNumeric function:
