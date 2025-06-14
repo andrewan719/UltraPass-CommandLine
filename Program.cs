@@ -21,6 +21,7 @@ void main()
 */
 void menu(PasswordManager mgr)
 {
+    Console.WriteLine("Welcome to UltraPass!\n");
     bool KillProg = false;
     while (!KillProg)
     {
@@ -45,12 +46,16 @@ void menu(PasswordManager mgr)
             bool success = int.TryParse(response, out vault);
             if (success && 0 <= vault && vault <= mgr.VaultLength - 1)
             {
-                Console.WriteLine("Opening vault" + vault);
+                Console.WriteLine("Opening vault " + vault);
                 Console.WriteLine("Enter vault password: ");
                 string password = Console.ReadLine();
                 try
                 {
-                    if (password != "") mgr.OpenVault(vault, password);
+                    if (password != "")
+                    {
+                        Vault v = mgr.OpenVault(vault, password);
+                        DisplayVault(v);
+                    }
                     else Console.WriteLine("Please enter a password.");
                 }
                 catch
@@ -97,8 +102,12 @@ Function: determines if a given string is alphanumeric
 bool IsAlphaNumeric(string input)
 {
     Regex rg = new Regex(@"^[^a-zA-Z0-9_,]*$");
-    return rg.IsMatch(input);
+    return !(rg.IsMatch(input));
 }
 
+void DisplayVault(Vault v)
+{
+    return;
+}
 
 main();

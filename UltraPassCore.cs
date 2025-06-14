@@ -49,13 +49,13 @@ namespace UltraPassCore
     }
     class PasswordManager
     {
-        public string[] vaults = [];
+        public List<string> vaults = [];
         public int VaultLength;
         string VaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"UltraPass\");
         public PasswordManager() 
         {
             ReadVaults();
-            VaultLength = vaults.Length;
+            VaultLength = vaults.Count;
         }
 
         /*ReadVaults function:
@@ -65,17 +65,17 @@ namespace UltraPassCore
         */
         public void ReadVaults()
         {
-            string[] VaultFiles;
+            List<string> VaultFiles;
             try
             {
-                VaultFiles = Directory.GetFiles(VaultPath, "*.upw", SearchOption.AllDirectories);
+                VaultFiles = Directory.GetFiles(VaultPath, "*.upw", SearchOption.AllDirectories).ToList<string>();
             }
             catch (DirectoryNotFoundException)
             {
                 Directory.CreateDirectory(VaultPath);
                 VaultFiles = [];
             }
-            if (VaultFiles.Length != 0)
+            if (VaultFiles.Count != 0)
             {
                 vaults = GetVaultNames(VaultFiles);
             }
@@ -94,20 +94,18 @@ namespace UltraPassCore
                 throw new Exception("Vault password is blank");
             }
             SHA256 hash = SHA256.Create();
-            /*IMPORTANT: CHANGE THIS TO TAKE USERNAME AND PASSWORD AS FUNCTION INPUT*/
             string HashedPassword = UltraPassUtils.HashPassword(VaultPassword);
             string path = VaultPath + @"\" + VaultName + ".upw";
             try
             {
-                File.Create(path);
+                File.AppendAllText(path, HashedPassword + Environment.NewLine);
+                vaults.Add(VaultName);
             }
             catch
             {
                 Debug.Write("Exception caught in method CreateVault");
                 throw;
             }
-            File.AppendAllText(path, HashedPassword + Environment.NewLine);
-            vaults.Append(VaultName);
             return;
 
         }
@@ -117,9 +115,9 @@ namespace UltraPassCore
         Output: array of vault names
         Function: turns the file paths into just the vault names
         */
-        string[] GetVaultNames(string[] VaultFiles)
+        List<String> GetVaultNames(List<string> VaultFiles)
         {
-            for (int i = 0; i < VaultFiles.Length; i++)
+            for (int i = 0; i < VaultFiles.Count; i++)
             {
                 string file = VaultFiles[i];
                 string[] name = file.Split(@"\");
@@ -131,7 +129,7 @@ namespace UltraPassCore
 
         
 
-        public void OpenVault(int vault, string password)
+        public Vault OpenVault(int vault, string password)
         {
             string key;
             
@@ -140,7 +138,7 @@ namespace UltraPassCore
             if(v.CheckPassword(password))
             {
                 key = password;
-                return;
+                return v;
             }
             Debug.WriteLine("Password incorrect; throwing exception");
             throw new Exception("Incorrect password.");
@@ -219,7 +217,7 @@ namespace UltraPassCore
                 EncryptedPassword = encoder.EncryptCbc(Encoding.ASCII.GetBytes(username), BitConverter.GetBytes(piv));
             }
             Password p = new Password(this, name, EncryptedUsername, EncryptedPassword, uiv.ToString(), piv.ToString());
-            passwords.Append(p);
+            passwords.Add(p);
         }
         public void CloseVault()
         {
