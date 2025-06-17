@@ -151,7 +151,7 @@ namespace UltraPassCore
     }
     class Vault
     {
-        List<Password> passwords = new List<Password>();
+        public List<Password> passwords = new List<Password>();
         string VaultName;
         private string HashedPassword;
         private string key;

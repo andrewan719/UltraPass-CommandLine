@@ -107,7 +107,38 @@ bool IsAlphaNumeric(string input)
 
 void DisplayVault(Vault v)
 {
-    return;
+    int i = 0;
+    foreach(Password p in v.passwords)
+    {
+        Console.WriteLine(i + ": " + p.GetName() + "\n");
+        i++;
+    }
+    while (true)
+    {
+
+        Console.WriteLine("Type a password's number to open it, or q to close the vault. ");
+        string response = Console.ReadLine();
+        if (response == "q")
+        {
+            Console.WriteLine("Closing vault...");
+            return;
+        }
+        else
+        {
+            int pw;
+            bool success = int.TryParse(response, out pw);
+            if (success && pw >= 0 && pw < v.passwords.Count)
+            {
+                (string, string) credentials = v.passwords[pw].DecryptCredentials(v.GetKey());
+                Console.WriteLine("Username: " + credentials.Item1 + '\n');
+                Console.WriteLine("Password: " + credentials.Item2 + "\n");
+            }
+            else
+            {
+                Console.WriteLine("Command not understood. Try again.\n");
+            }
+        }
+    }
 }
 
 main();
